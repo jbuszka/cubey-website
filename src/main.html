@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cubey.app</title>
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.59/build/spline-viewer.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
+
+        :root {
+            --cubey-color: #d1c7bd;
+            --background-opacity: 0.15;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .spline-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        spline-viewer {
+            width: 100%;
+            height: 100%;
+        }
+
+        .logo-container {
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .logo-container:hover {
+            transform: translateX(-50%) scale(1.02);
+        }
+
+        .logo-background {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, var(--background-opacity));
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cubic-pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            border-radius: 15px;
+            opacity: 0.5;
+        }
+
+        .logo {
+            position: relative;
+            height: auto;
+            object-fit: contain;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        .cubes-container {
+            position: absolute;
+            left: 50%;
+            opacity: 0;
+            visibility: hidden;
+            display: flex;
+            gap: 2rem;
+            z-index: 5;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cube {
+            background: rgba(0, 0, 0, var(--background-opacity));
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cubey-color);
+            transform: translateY(50px);
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cube-content {
+            opacity: 0;
+            transition: opacity 0.5s ease, text-shadow 0.5s ease;
+        }
+
+        .learn-more {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, var(--background-opacity));
+            color: var(--cubey-color);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .learn-more:hover {
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        /* Desktop styles */
+        @media (min-width: 769px) {
+            .logo {
+                width: 450px;
+            }
+            
+            .logo-background {
+                width: 500px;
+                height: 160px;
+            }
+
+            .cube {
+                width: 300px;
+                height: 300px;
+            }
+
+            .cubes-container {
+                top: 60%;
+                transform: translateX(-50%) translateY(-50%);
+            }
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .logo {
+                width: 300px;
+            }
+            
+            .logo-background {
+                width: 330px;
+                height: 110px;
+            }
+
+            .cube {
+                width: 150px;
+                height: 150px;
+            }
+
+            .cubes-container {
+                top: 50%;
+                transform: translateX(-50%) translateY(-50%);
+            }
+        }
+
+        .cubes-visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .cube.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .cube.active .cube-content {
+            opacity: 1;
+            text-shadow: 0 0 10px rgba(209, 199, 189, 0.5);
+        }
+
+        .cubic-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.15;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spline-container">
+            <spline-viewer url="https://prod.spline.design/XJ1sBDchajcDAwgz/scene.splinecode"></spline-viewer>
+        </div>
+
+        <div class="cubes-container" id="cubesContainer">
+            <div class="cube">
+                <div class="cubic-pattern"></div>
+                <div class="cube-content">Box 1</div>
+            </div>
+            <div class="cube">
+                <div class="cubic-pattern"></div>
+                <div class="cube-content">Box 2</div>
+            </div>
+        </div>
+
+        <div class="logo-container" id="logoContainer">
+            <div class="logo-background">
+                <div class="cubic-pattern"></div>
+                <img src="https://cubey.app/wp-content/uploads/2025/01/Logo_v2.png" alt="Cubey.app" class="logo">
+            </div>
+        </div>
+
+        <button class="learn-more" id="learnMore">
+            Learn More
+        </button>
+    </div>
+
+    <script>
+        const cubesContainer = document.getElementById('cubesContainer');
+        const logoContainer = document.getElementById('logoContainer');
+        const learnMore = document.getElementById('learnMore');
+        const cubes = document.querySelectorAll('.cube');
+        let isVisible = false;
+
+        function showCubes() {
+            if (!isVisible) {
+                isVisible = true;
+                cubesContainer.classList.add('cubes-visible');
+                setTimeout(() => {
+                    cubes.forEach((cube, index) => {
+                        setTimeout(() => {
+                            cube.classList.add('active');
+                        }, index * 100);
+                    });
+                }, 100);
+            }
+        }
+
+        function hideCubes() {
+            if (isVisible) {
+                isVisible = false;
+                cubes.forEach((cube, index) => {
+                    setTimeout(() => {
+                        cube.classList.remove('active');
+                    }, index * 100);
+                });
+                setTimeout(() => {
+                    cubesContainer.classList.remove('cubes-visible');
+                }, 800);
+            }
+        }
+
+        function toggleCubes() {
+            if (isVisible) {
+                hideCubes();
+            } else {
+                showCubes();
+            }
+        }
+
+        logoContainer.addEventListener('click', toggleCubes);
+        learnMore.addEventListener('click', toggleCubes);
+    </script>
+</body>
+</html>
